@@ -42,11 +42,7 @@ export async function GET() {
 
     const data = kopvertejumsRes.data.values || [];
 
-    // Parse header row
-    const headers = data[0] || [];
-
-    // Parse player rows
-    // Get match headers
+    // Get match headers (columns with game matchups like GBR-AUT, HUN-FIN, etc.)
     const headers = data[0] || [];
     const matchNames = headers.slice(1, headers.length - 4); // All columns except Player, Kopā, 3p, 2p, 1p
 
