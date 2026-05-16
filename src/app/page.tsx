@@ -20,6 +20,10 @@ interface LeaderboardEntry {
   total_points: number;
 }
 
+interface DetailedLeaderboardEntry extends LeaderboardEntry {
+  match_points: number[]; // Points for each match [0,3,2,1,...]
+}
+
 interface PlayerHistory {
   match_id: string;
   home_team: string;
@@ -79,10 +83,12 @@ export default function Home() {
   const [playerHistory, setPlayerHistory] = useState<PlayerHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>(''); // YYYY-MM-DD format
+  const [detailedLeaderboard, setDetailedLeaderboard] = useState<DetailedLeaderboardEntry[]>([]);
 
   useEffect(() => {
     fetchMatches();
     fetchLeaderboard();
+    fetchDetailedLeaderboard();
   }, []);
 
   useEffect(() => {
@@ -139,6 +145,26 @@ export default function Home() {
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       setLeaderboard([]);
+    }
+  };
+
+  const fetchDetailedLeaderboard = async () => {
+    try {
+      const res = await fetch('/api/leaderboard-detailed');
+      if (!res.ok) {
+        console.error('Detailed leaderboard fetch failed:', res.status);
+        setDetailedLeaderboard([]);
+        return;
+      }
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        setDetailedLeaderboard([]);
+        return;
+      }
+      setDetailedLeaderboard(data);
+    } catch (error) {
+      console.error('Error fetching detailed leaderboard:', error);
+      setDetailedLeaderboard([]);
     }
   };
 
@@ -463,66 +489,115 @@ export default function Home() {
         )}
 
         {activeTab === 'leaderboard' && (
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="space-y-2 p-4">
-              <div className="grid grid-cols-5 gap-4 font-bold bg-blue-600 text-white p-4 rounded-lg">
-                <div className="text-left">Spēlētājs</div>
-                <div className="text-center">3 p.</div>
-                <div className="text-center">2 p.</div>
-                <div className="text-center">1 p.</div>
-                <div className="text-center">Kopā</div>
-              </div>
-              {Array.isArray(leaderboard) && leaderboard.length > 0 ? (
-                leaderboard.map((entry, idx) => (
-                  <div key={entry.player_name}>
-                    <div
-                      className="grid grid-cols-5 gap-4 p-4 border-b hover:bg-blue-50 cursor-pointer rounded"
-                      onClick={() => {
-                        setExpandedPlayer(expandedPlayer === entry.player_name ? null : entry.player_name);
-                        if (expandedPlayer !== entry.player_name) {
-                          fetchPlayerHistory(entry.player_name);
-                        }
-                      }}
-                    >
-                      <div className="font-semibold">
-                        {idx + 1}. {entry.player_name}
-                      </div>
-                      <div className="text-center">{entry.points_3}</div>
-                      <div className="text-center">{entry.points_2}</div>
-                      <div className="text-center">{entry.points_1}</div>
-                      <div className="text-center font-bold text-blue-600">
-                        {entry.total_points}
-                      </div>
-                    </div>
-                    {expandedPlayer === entry.player_name && (
-                      <div className="bg-gray-50 p-4 rounded ml-4 mr-4 mb-2">
-                        <div className="text-sm space-y-2">
-                          {Array.isArray(playerHistory) && playerHistory.length > 0 ? (
-                            playerHistory.map((hist, i) => (
-                              <div key={i} className="flex justify-between text-gray-700">
-                                <span>
-                                  {COUNTRY_FLAGS[hist.home_team] || '🏒'} {hist.home_team} —{' '}
-                                  {COUNTRY_FLAGS[hist.away_team] || '🏒'} {hist.away_team}
-                                </span>
-                                <span>
-                                  {hist.predicted_home}:{hist.predicted_away} → {hist.home_score}:
-                                  {hist.away_score} = <strong>{hist.points}p</strong>
-                                </span>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="text-gray-400">Nav prognožu datu</div>
-                          )}
+          <div className="space-y-6">
+            {/* Bar Chart */}
+            {Array.isArray(detailedLeaderboard) && detailedLeaderboard.length > 0 ? (
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Punktu sadalījums</h2>
+                <div className="space-y-4">
+                  {detailedLeaderboard.map((entry, idx) => {
+                    const maxPoints = Math.max(...detailedLeaderboard.map(e => e.total_points));
+                    const percentage = (entry.total_points / maxPoints) * 100;
+
+                    return (
+                      <div key={entry.player_name}>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-semibold text-gray-700">
+                            {idx + 1}. {entry.player_name}
+                          </span>
+                          <span className="font-bold text-lg text-blue-600">
+                            {entry.total_points}p
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-blue-400 to-blue-600 h-full flex items-center justify-end pr-3 transition-all"
+                            style={{ width: `${percentage}%` }}
+                          >
+                            {percentage > 20 && (
+                              <span className="text-white font-bold text-sm">
+                                {entry.total_points}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="text-center text-gray-500 py-8">
-                  ⚠️ Nevar ielādēt kopvērtējumu. Pārliecinieties, ka Google Sheets ir pareizi konfigurēts.
+                    );
+                  })}
                 </div>
-              )}
+              </div>
+            ) : null}
+
+            {/* Detailed Table */}
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="p-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Detalizēts skaitījums</h2>
+
+                {Array.isArray(detailedLeaderboard) && detailedLeaderboard.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-blue-600 text-white">
+                          <th className="px-4 py-3 text-left">Spēlētājs</th>
+                          <th className="px-4 py-3 text-center">M1</th>
+                          <th className="px-4 py-3 text-center">M2</th>
+                          <th className="px-4 py-3 text-center">M3</th>
+                          <th className="px-4 py-3 text-center">M4</th>
+                          <th className="px-4 py-3 text-center">M5</th>
+                          <th className="px-4 py-3 text-center">M6</th>
+                          <th className="px-4 py-3 text-center font-bold">Kopā</th>
+                          <th className="px-4 py-3 text-center">3p</th>
+                          <th className="px-4 py-3 text-center">2p</th>
+                          <th className="px-4 py-3 text-center">1p</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {detailedLeaderboard.map((entry, idx) => (
+                          <tr key={entry.player_name} className="border-b hover:bg-blue-50">
+                            <td className="px-4 py-3 font-semibold">
+                              {idx + 1}. {entry.player_name}
+                            </td>
+                            {/* First 6 matches */}
+                            {entry.match_points.slice(0, 6).map((points, i) => (
+                              <td key={i} className="px-4 py-3 text-center">
+                                <span
+                                  className={`inline-block w-8 h-8 rounded flex items-center justify-center font-bold text-white ${
+                                    points === 3
+                                      ? 'bg-green-500'
+                                      : points === 2
+                                      ? 'bg-blue-500'
+                                      : points === 1
+                                      ? 'bg-yellow-500'
+                                      : 'bg-gray-300'
+                                  }`}
+                                >
+                                  {points}
+                                </span>
+                              </td>
+                            ))}
+                            <td className="px-4 py-3 text-center font-bold text-blue-600 text-lg">
+                              {entry.total_points}
+                            </td>
+                            <td className="px-4 py-3 text-center text-green-600 font-semibold">
+                              {entry.points_3}
+                            </td>
+                            <td className="px-4 py-3 text-center text-blue-600 font-semibold">
+                              {entry.points_2}
+                            </td>
+                            <td className="px-4 py-3 text-center text-yellow-600 font-semibold">
+                              {entry.points_1}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 py-8">
+                    ⚠️ Nevar ielādēt kopvērtējumu. Pārliecinieties, ka Google Sheets ir pareizi konfigurēts.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
