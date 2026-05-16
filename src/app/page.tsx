@@ -274,63 +274,56 @@ export default function Home() {
 
         {activeTab === 'leaderboard' && (
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-blue-600 text-white">
-                <tr>
-                  <th className="p-4 text-left">Spēlētājs</th>
-                  <th className="p-4 text-center">3 p.</th>
-                  <th className="p-4 text-center">2 p.</th>
-                  <th className="p-4 text-center">1 p.</th>
-                  <th className="p-4 text-center font-bold">Kopā</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((entry, idx) => (
-                  <>
-                    <tr
-                      key={entry.player_name}
-                      className="border-b hover:bg-blue-50 cursor-pointer"
-                      onClick={() => {
-                        setExpandedPlayer(expandedPlayer === entry.player_name ? null : entry.player_name);
-                        if (expandedPlayer !== entry.player_name) {
-                          fetchPlayerHistory(entry.player_name);
-                        }
-                      }}
-                    >
-                      <td className="p-4 font-semibold">
-                        {idx + 1}. {entry.player_name}
-                      </td>
-                      <td className="p-4 text-center">{entry.points_3}</td>
-                      <td className="p-4 text-center">{entry.points_2}</td>
-                      <td className="p-4 text-center">{entry.points_1}</td>
-                      <td className="p-4 text-center font-bold text-blue-600">
-                        {entry.total_points}
-                      </td>
-                    </tr>
-                    {expandedPlayer === entry.player_name && (
-                      <tr className="bg-gray-50">
-                        <td colSpan={5} className="p-4">
-                          <div className="text-sm space-y-2">
-                            {playerHistory.map((hist, i) => (
-                              <div key={i} className="flex justify-between text-gray-700">
-                                <span>
-                                  {COUNTRY_FLAGS[hist.home_team]} {hist.home_team} —{' '}
-                                  {COUNTRY_FLAGS[hist.away_team]} {hist.away_team}
-                                </span>
-                                <span>
-                                  {hist.predicted_home}:{hist.predicted_away} → {hist.home_score}:
-                                  {hist.away_score} = <strong>{hist.points}p</strong>
-                                </span>
-                              </div>
-                            ))}
+            <div className="space-y-2 p-4">
+              <div className="grid grid-cols-5 gap-4 font-bold bg-blue-600 text-white p-4 rounded-lg">
+                <div className="text-left">Spēlētājs</div>
+                <div className="text-center">3 p.</div>
+                <div className="text-center">2 p.</div>
+                <div className="text-center">1 p.</div>
+                <div className="text-center">Kopā</div>
+              </div>
+              {leaderboard.map((entry, idx) => (
+                <div key={entry.player_name}>
+                  <div
+                    className="grid grid-cols-5 gap-4 p-4 border-b hover:bg-blue-50 cursor-pointer rounded"
+                    onClick={() => {
+                      setExpandedPlayer(expandedPlayer === entry.player_name ? null : entry.player_name);
+                      if (expandedPlayer !== entry.player_name) {
+                        fetchPlayerHistory(entry.player_name);
+                      }
+                    }}
+                  >
+                    <div className="font-semibold">
+                      {idx + 1}. {entry.player_name}
+                    </div>
+                    <div className="text-center">{entry.points_3}</div>
+                    <div className="text-center">{entry.points_2}</div>
+                    <div className="text-center">{entry.points_1}</div>
+                    <div className="text-center font-bold text-blue-600">
+                      {entry.total_points}
+                    </div>
+                  </div>
+                  {expandedPlayer === entry.player_name && (
+                    <div className="bg-gray-50 p-4 rounded ml-4 mr-4 mb-2">
+                      <div className="text-sm space-y-2">
+                        {playerHistory.map((hist, i) => (
+                          <div key={i} className="flex justify-between text-gray-700 text-xs">
+                            <span>
+                              {COUNTRY_FLAGS[hist.home_team] || '🏒'} {hist.home_team} —{' '}
+                              {COUNTRY_FLAGS[hist.away_team] || '🏒'} {hist.away_team}
+                            </span>
+                            <span>
+                              {hist.predicted_home}:{hist.predicted_away} → {hist.home_score}:
+                              {hist.away_score} = <strong>{hist.points}p</strong>
+                            </span>
                           </div>
-                        </td>
-                      </tr>
-                    )}
-                  </>
-                ))}
-              </tbody>
-            </table>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

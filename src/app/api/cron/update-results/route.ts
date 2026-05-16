@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
+export const dynamic = 'force-dynamic';
 
 const sheets = google.sheets('v4');
 
