@@ -47,3 +47,6 @@ Thumbs.db
 
 # Duplicate API files (old structure)
 api-*-route.ts
+
+.vercel
+.env*.local

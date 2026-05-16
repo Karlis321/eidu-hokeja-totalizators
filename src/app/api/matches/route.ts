@@ -21,13 +21,13 @@ export async function GET() {
     const auth = new google.auth.GoogleAuth({
       credentials: {
         type: 'service_account',
-        projectId: process.env.GOOGLE_PROJECT_ID,
-        privateKeyId: process.env.GOOGLE_PRIVATE_KEY_ID,
-        privateKey: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-        clientEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        authUri: 'https://accounts.google.com/o/oauth2/auth',
-        tokenUri: 'https://oauth2.googleapis.com/token',
+        project_id: process.env.GOOGLE_PROJECT_ID,
+        private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+        token_uri: 'https://oauth2.googleapis.com/token',
       } as any,
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
@@ -57,7 +57,19 @@ export async function GET() {
     if (error instanceof Error && 'code' in error) {
       console.error('[/api/matches] Error code:', (error as any).code);
     }
-    // Return empty array instead of error - frontend will handle gracefully
-    return NextResponse.json([], { status: 200 });
+    // Return error details for debugging
+    return NextResponse.json(
+      {
+        error: errorMessage,
+        details: errorDetails,
+        vars: {
+          hasProjectId: !!process.env.GOOGLE_PROJECT_ID,
+          hasKey: !!process.env.GOOGLE_PRIVATE_KEY,
+          hasEmail: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+          hasSheetId: !!process.env.GOOGLE_SHEET_ID,
+        }
+      },
+      { status: 200 }
+    );
   }
 }
