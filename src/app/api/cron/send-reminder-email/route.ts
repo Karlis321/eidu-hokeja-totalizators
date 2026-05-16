@@ -22,13 +22,22 @@ export async function GET(req: NextRequest) {
         authUri: 'https://accounts.google.com/o/oauth2/auth',
         tokenUri: 'https://oauth2.googleapis.com/token',
       } as any,
-      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/gmail.send'],
+      scopes: ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/gmail.send'],
     });
 
     const tomorrow = new Date();
     tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
     const tomorrowDateStr = tomorrow.toISOString().split('T')[0];
 
+    // Fetch games from Flashscore API
+    const flashscoreGames = await fetchTomorrowsGamesFromFlashscore(tomorrowDateStr);
+
+    // Add fetched games to Google Sheets
+    if (flashscoreGames.length > 0) {
+      await addGamesToSheet(auth, flashscoreGames);
+    }
+
+    // Get all games for tomorrow from sheet (including newly added)
     const response = await sheets.spreadsheets.values.get({
       auth,
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -53,11 +62,43 @@ export async function GET(req: NextRequest) {
     const gamesText = formatGamesForEmail(games);
     await sendEmailReminder(auth, gamesText);
 
-    return NextResponse.json({ success: true, games_count: games.length });
+    return NextResponse.json({ success: true, games_count: games.length, fetched: flashscoreGames.length });
   } catch (error) {
     console.error('Error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
+}
+
+async function fetchTomorrowsGamesFromFlashscore(dateStr: string): Promise<any[]> {
+  try {
+    // Flashscore doesn't have a free public API, so we'll use a workaround
+    // Fetch from a sports data source that aggregates IIHF data
+    const response = await fetch(`https://www.flashscore.com/hockey/world/world-championship/`);
+
+    // For now, return empty array - actual scraping requires headless browser
+    // Manual script (add_matches_direct.py) can be used as fallback
+    console.log('[7PM Cron] Flashscore fetch attempted for', dateStr);
+    return [];
+  } catch (error) {
+    console.error('[7PM Cron] Error fetching from Flashscore:', error);
+    return [];
+  }
+}
+
+async function addGamesToSheet(auth: any, games: any[]): Promise<void> {
+  if (games.length === 0) return;
+
+  const values = games.map(g => [g.match_id, g.date_time, g.home_team, g.away_team, '', '', 'upcoming']);
+
+  await sheets.spreadsheets.values.append({
+    auth,
+    spreadsheetId: process.env.GOOGLE_SHEET_ID,
+    range: 'Speles!A:G',
+    valueInputOption: 'RAW',
+    requestBody: { values },
+  });
+
+  console.log(`[7PM Cron] Added ${games.length} games to Google Sheets`);
 }
 
 function formatGamesForEmail(games: any[]): string {

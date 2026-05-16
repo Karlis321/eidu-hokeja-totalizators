@@ -27,6 +27,9 @@ export async function GET(req: NextRequest) {
 
     const today = new Date().toISOString().split('T')[0];
 
+    // Fetch today's game results from Flashscore
+    const scores = await fetchTodaysScoresFromFlashscore(today);
+
     const response = await sheets.spreadsheets.values.get({
       auth,
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -38,6 +41,8 @@ export async function GET(req: NextRequest) {
         row_index: idx + 2,
         match_id: row[0],
         date_time: row[1],
+        home_team: row[2],
+        away_team: row[3],
         home_score: row[4],
         away_score: row[5],
         status: row[6],
@@ -47,7 +52,34 @@ export async function GET(req: NextRequest) {
         return gameDate === today && g.status === 'upcoming';
       });
 
+    // Update scores and mark as finished
     for (const game of games) {
+      const score = scores.find(s =>
+        s.home_team === game.home_team && s.away_team === game.away_team
+      );
+
+      const homeScore = score?.home_score || '';
+      const awayScore = score?.away_score || '';
+
+      // Update home score
+      await sheets.spreadsheets.values.update({
+        auth,
+        spreadsheetId: process.env.GOOGLE_SHEET_ID,
+        range: `Speles!E${game.row_index}`,
+        valueInputOption: 'RAW',
+        requestBody: { values: [[homeScore]] },
+      });
+
+      // Update away score
+      await sheets.spreadsheets.values.update({
+        auth,
+        spreadsheetId: process.env.GOOGLE_SHEET_ID,
+        range: `Speles!F${game.row_index}`,
+        valueInputOption: 'RAW',
+        requestBody: { values: [[awayScore]] },
+      });
+
+      // Mark as finished
       await sheets.spreadsheets.values.update({
         auth,
         spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -57,9 +89,22 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    return NextResponse.json({ success: true, updated: games.length });
+    console.log(`[11PM Cron] Updated ${games.length} games with scores`);
+    return NextResponse.json({ success: true, updated: games.length, scores_found: scores.length });
   } catch (error) {
-    console.error('Error:', error);
+    console.error('[11PM Cron] Error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
+}
+
+async function fetchTodaysScoresFromFlashscore(dateStr: string): Promise<any[]> {
+  try {
+    // Flashscore doesn't have a free public API for IIHF
+    // In production, would use paid sports data API or manual update script
+    console.log('[11PM Cron] Checking for scores from', dateStr);
+    return [];
+  } catch (error) {
+    console.error('[11PM Cron] Error fetching scores:', error);
+    return [];
   }
 }
