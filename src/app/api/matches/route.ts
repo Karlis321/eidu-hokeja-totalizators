@@ -50,7 +50,13 @@ export async function GET() {
 
     return NextResponse.json(matches, { status: 200 });
   } catch (error) {
-    console.error('[/api/matches] Error fetching matches:', error instanceof Error ? error.message : String(error));
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorDetails = error instanceof Error ? error.stack : '';
+    console.error('[/api/matches] Error fetching matches:', errorMessage);
+    console.error('[/api/matches] Details:', errorDetails);
+    if (error instanceof Error && 'code' in error) {
+      console.error('[/api/matches] Error code:', (error as any).code);
+    }
     // Return empty array instead of error - frontend will handle gracefully
     return NextResponse.json([], { status: 200 });
   }
