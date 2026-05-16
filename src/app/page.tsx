@@ -234,6 +234,10 @@ export default function Home() {
     return new Date(dateTime).toLocaleTimeString('lv-LV', { hour: '2-digit', minute: '2-digit' });
   };
 
+  const getMatchDate = (dateTime: string) => {
+    return new Date(dateTime).toLocaleDateString('lv-LV', { month: '2-digit', day: '2-digit' });
+  };
+
   if (loading) {
     return <div className="p-8 text-center">Ielādē...</div>;
   }
@@ -287,7 +291,7 @@ export default function Home() {
               <select
                 value={selectedPlayer}
                 onChange={(e) => setSelectedPlayer(e.target.value)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 relative z-10"
               >
                 {PLAYERS.map((p) => (
                   <option key={p} value={p}>
@@ -304,13 +308,20 @@ export default function Home() {
                   <div key={match.match_id} className="border-2 border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl">{COUNTRY_FLAGS[match.home_team] || '🏒'}</span>
-                        <span className="font-semibold">{match.home_team}</span>
-                        <span className="text-gray-500">—</span>
-                        <span className="font-semibold">{match.away_team}</span>
-                        <span className="text-2xl">{COUNTRY_FLAGS[match.away_team] || '🏒'}</span>
+                        <span className="text-3xl">{COUNTRY_FLAGS[match.home_team] || '🏒'}</span>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-lg">{match.home_team}</span>
+                        </div>
+                        <span className="text-gray-500 mx-2">—</span>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-lg">{match.away_team}</span>
+                        </div>
+                        <span className="text-3xl">{COUNTRY_FLAGS[match.away_team] || '🏒'}</span>
                       </div>
-                      <span className="text-sm text-gray-600">{getMatchTime(match.date_time)}</span>
+                      <div className="text-right text-sm text-gray-600">
+                        <div className="font-semibold">{getMatchDate(match.date_time)}</div>
+                        <div>{getMatchTime(match.date_time)}</div>
+                      </div>
                     </div>
 
                     {!canSubmit(match) && (
