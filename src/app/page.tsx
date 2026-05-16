@@ -34,10 +34,27 @@ interface PlayerHistory {
 const PLAYERS = ['Kārlis', 'Inga', 'Aivis', 'Dace', 'Jānis D.', 'Jānis S.', 'Andris', 'Elīna'];
 
 const COUNTRY_FLAGS: { [key: string]: string } = {
-  AUT: '🇦🇹', BLR: '🇧🇾', CAN: '🇨🇦', CZE: '🇨🇿', DEN: '🇩🇰',
-  FIN: '🇫🇮', FRA: '🇫🇷', GER: '🇩🇪', GBR: '🇬🇧', HUN: '🇭🇺',
-  ITA: '🇮🇹', JPN: '🇯🇵', KAZ: '🇰🇿', LAT: '🇱🇻', NOR: '🇳🇴',
-  ROU: '🇷🇴', SVK: '🇸🇰', SLO: '🇸🇮', SWE: '🇸🇪', SUI: '🇨🇭', USA: '🇺🇸',
+  AUT: '🇦🇹',
+  BLR: '🇧🇾',
+  CAN: '🇨🇦',
+  CZE: '🇨🇿',
+  DEN: '🇩🇰',
+  FIN: '🇫🇮',
+  FRA: '🇫🇷',
+  GER: '🇩🇪',
+  GBR: '🇬🇧',
+  HUN: '🇭🇺',
+  ITA: '🇮🇹',
+  JPN: '🇯🇵',
+  KAZ: '🇰🇿',
+  LAT: '🇱🇻',
+  NOR: '🇳🇴',
+  ROU: '🇷🇴',
+  SVK: '🇸🇰',
+  SLO: '🇸🇮',
+  SWE: '🇸🇪',
+  SUI: '🇨🇭',
+  USA: '🇺🇸',
 };
 
 export default function Home() {
@@ -107,7 +124,7 @@ export default function Home() {
 
   const fetchPlayerHistory = async (playerName: string) => {
     try {
-      const res = await fetch(`/api/player-history?player=${playerName}`);
+      const res = await fetch(`/api/player-history?player=${encodeURIComponent(playerName)}`);
       if (!res.ok) {
         setPlayerHistory([]);
         return;
@@ -240,56 +257,58 @@ export default function Home() {
 
             {/* Matches */}
             <div className="space-y-4">
-              {Array.isArray(matches) && matches.length > 0 ? matches.map((match) => (
-                <div key={match.match_id} className="border-2 border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-2xl">{COUNTRY_FLAGS[match.home_team] || '🏒'}</span>
-                      <span className="font-semibold">{match.home_team}</span>
-                      <span className="text-gray-500">—</span>
-                      <span className="font-semibold">{match.away_team}</span>
-                      <span className="text-2xl">{COUNTRY_FLAGS[match.away_team] || '🏒'}</span>
+              {Array.isArray(matches) && matches.length > 0 ? (
+                matches.map((match) => (
+                  <div key={match.match_id} className="border-2 border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{COUNTRY_FLAGS[match.home_team] || '🏒'}</span>
+                        <span className="font-semibold">{match.home_team}</span>
+                        <span className="text-gray-500">—</span>
+                        <span className="font-semibold">{match.away_team}</span>
+                        <span className="text-2xl">{COUNTRY_FLAGS[match.away_team] || '🏒'}</span>
+                      </div>
+                      <span className="text-sm text-gray-600">{getMatchTime(match.date_time)}</span>
                     </div>
-                    <span className="text-sm text-gray-600">{getMatchTime(match.date_time)}</span>
-                  </div>
 
-                  {!canSubmit(match) && (
-                    <div className="text-xs text-red-600 mb-2">⏰ Laiks prognozēšanai ir beidzies</div>
-                  )}
+                    {!canSubmit(match) && (
+                      <div className="text-xs text-red-600 mb-2">⏰ Laiks prognozēšanai ir beidzies</div>
+                    )}
 
-                  <div className="flex gap-3">
-                    <input
-                      type="number"
-                      min="0"
-                      disabled={!canSubmit(match) || match.status !== 'upcoming'}
-                      value={predictions[match.match_id]?.home || ''}
-                      onChange={(e) =>
-                        setPredictions({
-                          ...predictions,
-                          [match.match_id]: { ...predictions[match.match_id], home: e.target.value },
-                        })
-                      }
-                      placeholder="Mājas"
-                      className="w-16 p-2 border-2 border-gray-300 rounded text-center disabled:bg-gray-100"
-                    />
-                    <span className="flex items-center text-gray-700 font-bold">:</span>
-                    <input
-                      type="number"
-                      min="0"
-                      disabled={!canSubmit(match) || match.status !== 'upcoming'}
-                      value={predictions[match.match_id]?.away || ''}
-                      onChange={(e) =>
-                        setPredictions({
-                          ...predictions,
-                          [match.match_id]: { ...predictions[match.match_id], away: e.target.value },
-                        })
-                      }
-                      placeholder="Viesi"
-                      className="w-16 p-2 border-2 border-gray-300 rounded text-center disabled:bg-gray-100"
-                    />
+                    <div className="flex gap-3">
+                      <input
+                        type="number"
+                        min="0"
+                        disabled={!canSubmit(match) || match.status !== 'upcoming'}
+                        value={predictions[match.match_id]?.home || ''}
+                        onChange={(e) =>
+                          setPredictions({
+                            ...predictions,
+                            [match.match_id]: { ...predictions[match.match_id], home: e.target.value },
+                          })
+                        }
+                        placeholder="Mājas"
+                        className="w-16 p-2 border-2 border-gray-300 rounded text-center disabled:bg-gray-100"
+                      />
+                      <span className="flex items-center text-gray-700 font-bold">:</span>
+                      <input
+                        type="number"
+                        min="0"
+                        disabled={!canSubmit(match) || match.status !== 'upcoming'}
+                        value={predictions[match.match_id]?.away || ''}
+                        onChange={(e) =>
+                          setPredictions({
+                            ...predictions,
+                            [match.match_id]: { ...predictions[match.match_id], away: e.target.value },
+                          })
+                        }
+                        placeholder="Viesi"
+                        className="w-16 p-2 border-2 border-gray-300 rounded text-center disabled:bg-gray-100"
+                      />
+                    </div>
                   </div>
-                </div>
-              ))) : (
+                ))
+              ) : (
                 <div className="text-center text-gray-500 py-8">
                   ⚠️ Nevar ielādēt spēles. Pārliecinieties, ka Google Sheets ir pareizi konfigurēts.
                 </div>
@@ -316,47 +335,53 @@ export default function Home() {
                 <div className="text-center">1 p.</div>
                 <div className="text-center">Kopā</div>
               </div>
-              {Array.isArray(leaderboard) && leaderboard.length > 0 ? leaderboard.map((entry, idx) => (
-                <div key={entry.player_name}>
-                  <div
-                    className="grid grid-cols-5 gap-4 p-4 border-b hover:bg-blue-50 cursor-pointer rounded"
-                    onClick={() => {
-                      setExpandedPlayer(expandedPlayer === entry.player_name ? null : entry.player_name);
-                      if (expandedPlayer !== entry.player_name) {
-                        fetchPlayerHistory(entry.player_name);
-                      }
-                    }}
-                  >
-                    <div className="font-semibold">
-                      {idx + 1}. {entry.player_name}
-                    </div>
-                    <div className="text-center">{entry.points_3}</div>
-                    <div className="text-center">{entry.points_2}</div>
-                    <div className="text-center">{entry.points_1}</div>
-                    <div className="text-center font-bold text-blue-600">
-                      {entry.total_points}
-                    </div>
-                  </div>
-                  {expandedPlayer === entry.player_name && (
-                    <div className="bg-gray-50 p-4 rounded ml-4 mr-4 mb-2">
-                      <div className="text-sm space-y-2">
-                        {playerHistory.map((hist, i) => (
-                          <div key={i} className="flex justify-between text-gray-700 text-xs">
-                            <span>
-                              {COUNTRY_FLAGS[hist.home_team] || '🏒'} {hist.home_team} —{' '}
-                              {COUNTRY_FLAGS[hist.away_team] || '🏒'} {hist.away_team}
-                            </span>
-                            <span>
-                              {hist.predicted_home}:{hist.predicted_away} → {hist.home_score}:
-                              {hist.away_score} = <strong>{hist.points}p</strong>
-                            </span>
-                          </div>
-                        ))}
+              {Array.isArray(leaderboard) && leaderboard.length > 0 ? (
+                leaderboard.map((entry, idx) => (
+                  <div key={entry.player_name}>
+                    <div
+                      className="grid grid-cols-5 gap-4 p-4 border-b hover:bg-blue-50 cursor-pointer rounded"
+                      onClick={() => {
+                        setExpandedPlayer(expandedPlayer === entry.player_name ? null : entry.player_name);
+                        if (expandedPlayer !== entry.player_name) {
+                          fetchPlayerHistory(entry.player_name);
+                        }
+                      }}
+                    >
+                      <div className="font-semibold">
+                        {idx + 1}. {entry.player_name}
+                      </div>
+                      <div className="text-center">{entry.points_3}</div>
+                      <div className="text-center">{entry.points_2}</div>
+                      <div className="text-center">{entry.points_1}</div>
+                      <div className="text-center font-bold text-blue-600">
+                        {entry.total_points}
                       </div>
                     </div>
-                  )}
-                </div>
-              ))) : (
+                    {expandedPlayer === entry.player_name && (
+                      <div className="bg-gray-50 p-4 rounded ml-4 mr-4 mb-2">
+                        <div className="text-sm space-y-2">
+                          {Array.isArray(playerHistory) && playerHistory.length > 0 ? (
+                            playerHistory.map((hist, i) => (
+                              <div key={i} className="flex justify-between text-gray-700">
+                                <span>
+                                  {COUNTRY_FLAGS[hist.home_team] || '🏒'} {hist.home_team} —{' '}
+                                  {COUNTRY_FLAGS[hist.away_team] || '🏒'} {hist.away_team}
+                                </span>
+                                <span>
+                                  {hist.predicted_home}:{hist.predicted_away} → {hist.home_score}:
+                                  {hist.away_score} = <strong>{hist.points}p</strong>
+                                </span>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-gray-400">Nav prognožu datu</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
                 <div className="text-center text-gray-500 py-8">
                   ⚠️ Nevar ielādēt kopvērtējumu. Pārliecinieties, ka Google Sheets ir pareizi konfigurēts.
                 </div>
