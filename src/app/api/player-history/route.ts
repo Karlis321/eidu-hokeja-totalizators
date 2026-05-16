@@ -5,6 +5,14 @@ export const dynamic = 'force-dynamic';
 const sheets = google.sheets('v4');
 
 export async function GET(req: NextRequest) {
+  // Check if environment variables are set
+  if (!process.env.GOOGLE_PROJECT_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) {
+    console.error("Missing Google Auth environment variables");
+    return NextResponse.json(
+      { error: "Google Sheets API not configured" },
+      { status: 500 }
+    );
+  }
   try {
     const playerName = req.nextUrl.searchParams.get('player');
 

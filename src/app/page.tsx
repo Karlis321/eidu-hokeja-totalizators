@@ -59,7 +59,17 @@ export default function Home() {
   const fetchMatches = async () => {
     try {
       const res = await fetch('/api/matches');
+      if (!res.ok) {
+        setMessage('❌ Kļūda ielādējot spēles (nav piekļuves datubāzei)');
+        setMatches([]);
+        return;
+      }
       const data = await res.json();
+      if (!Array.isArray(data)) {
+        setMessage('❌ Kļūda: neparedzēts datu formāts');
+        setMatches([]);
+        return;
+      }
       setMatches(data);
       setPredictions(
         data.reduce((acc: any, m: Match) => {
@@ -69,6 +79,7 @@ export default function Home() {
       );
     } catch (error) {
       setMessage('❌ Kļūda ielādējot spēles');
+      setMatches([]);
     } finally {
       setLoading(false);
     }
@@ -77,20 +88,39 @@ export default function Home() {
   const fetchLeaderboard = async () => {
     try {
       const res = await fetch('/api/leaderboard');
+      if (!res.ok) {
+        console.error('Leaderboard fetch failed:', res.status);
+        setLeaderboard([]);
+        return;
+      }
       const data = await res.json();
+      if (!Array.isArray(data)) {
+        setLeaderboard([]);
+        return;
+      }
       setLeaderboard(data);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
+      setLeaderboard([]);
     }
   };
 
   const fetchPlayerHistory = async (playerName: string) => {
     try {
       const res = await fetch(`/api/player-history?player=${playerName}`);
+      if (!res.ok) {
+        setPlayerHistory([]);
+        return;
+      }
       const data = await res.json();
+      if (!Array.isArray(data)) {
+        setPlayerHistory([]);
+        return;
+      }
       setPlayerHistory(data);
     } catch (error) {
       console.error('Error fetching history:', error);
+      setPlayerHistory([]);
     }
   };
 
@@ -210,7 +240,7 @@ export default function Home() {
 
             {/* Matches */}
             <div className="space-y-4">
-              {matches.map((match) => (
+              {Array.isArray(matches) && matches.length > 0 ? matches.map((match) => (
                 <div key={match.match_id} className="border-2 border-gray-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -259,7 +289,11 @@ export default function Home() {
                     />
                   </div>
                 </div>
-              ))}
+              ))) : (
+                <div className="text-center text-gray-500 py-8">
+                  ⚠️ Nevar ielādēt spēles. Pārliecinieties, ka Google Sheets ir pareizi konfigurēts.
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
@@ -282,7 +316,7 @@ export default function Home() {
                 <div className="text-center">1 p.</div>
                 <div className="text-center">Kopā</div>
               </div>
-              {leaderboard.map((entry, idx) => (
+              {Array.isArray(leaderboard) && leaderboard.length > 0 ? leaderboard.map((entry, idx) => (
                 <div key={entry.player_name}>
                   <div
                     className="grid grid-cols-5 gap-4 p-4 border-b hover:bg-blue-50 cursor-pointer rounded"
@@ -322,7 +356,11 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-              ))}
+              ))) : (
+                <div className="text-center text-gray-500 py-8">
+                  ⚠️ Nevar ielādēt kopvērtējumu. Pārliecinieties, ka Google Sheets ir pareizi konfigurēts.
+                </div>
+              )}
             </div>
           </div>
         )}

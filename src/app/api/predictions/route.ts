@@ -8,6 +8,18 @@ export async function POST(req: NextRequest) {
   try {
     const { player_name, match_id, predicted_home, predicted_away } = await req.json();
 
+    // Check if environment variables are set
+    const missingVars = [];
+    if (!process.env.GOOGLE_PROJECT_ID) missingVars.push('GOOGLE_PROJECT_ID');
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL) missingVars.push('GOOGLE_SERVICE_ACCOUNT_EMAIL');
+    if (!process.env.GOOGLE_PRIVATE_KEY) missingVars.push('GOOGLE_PRIVATE_KEY');
+    if (!process.env.GOOGLE_SHEET_ID) missingVars.push('GOOGLE_SHEET_ID');
+
+    if (missingVars.length > 0) {
+      console.error(`[/api/predictions] Missing environment variables: ${missingVars.join(', ')}`);
+      return NextResponse.json({ success: false, error: 'Google Sheets not configured' }, { status: 500 });
+    }
+
     const auth = new google.auth.GoogleAuth({
       credentials: {
         type: 'service_account',
@@ -41,9 +53,9 @@ export async function POST(req: NextRequest) {
       } as any,
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('Error:', error);
-    return NextResponse.json({ error: String(error) }, { status: 500 });
+    console.error('[/api/predictions] Error saving prediction:', error instanceof Error ? error.message : String(error));
+    return NextResponse.json({ success: false, error: 'Failed to save prediction' }, { status: 500 });
   }
 }
