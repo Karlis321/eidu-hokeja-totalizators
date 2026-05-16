@@ -1,8 +1,17 @@
 {
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
   "crons": [
     {
-      "path": "/api/cron/update-scores",
-      "schedule": "0 */4 * * *"
+      "path": "/api/cron/send-reminder-email",
+      "schedule": "0 19 * * *"
+    },
+    {
+      "path": "/api/cron/update-results",
+      "schedule": "0 23 * * *"
     }
   ]
 }
