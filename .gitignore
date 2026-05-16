@@ -38,3 +38,12 @@ yarn-error.log*
 
 # OS
 Thumbs.db
+
+# Documentation (unnecessary)
+*.md
+*.txt
+*.csv
+*.html
+
+# Duplicate API files (old structure)
+api-*-route.ts
