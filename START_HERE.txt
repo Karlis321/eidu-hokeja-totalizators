@@ -1,0 +1,127 @@
+╔════════════════════════════════════════════════════════════════╗
+║  🏒 EIDU ĢIMENES HOKEJA TOTALIZATORS                            ║
+║  Pasaules čempionāta prognožu spēle                             ║
+╚════════════════════════════════════════════════════════════════╝
+
+✨ PIRMIE SOĻI:
+
+1. Lasīt: INDEX.md
+   → Galvenais ievads un navigācija
+
+2. Sākt ar: QUICK_START.md  (30 min!)
+   → Ātrais setup — Google Cloud → Next.js → Localhost
+
+3. Deploy: SETUP.md (vidējais)
+   → Vercel deployment
+
+4. Debugga: CODE_OVERVIEW.md
+   → Kā kods darbojas
+
+5. Pārkontrolē: DEPLOY_CHECKLIST.md
+   → Pirms publicēšanas
+
+────────────────────────────────────────────────────────────────
+
+📚 DOKUMENTĀCIJAS KARTE:
+
+INDEX.md                    👈 SĀKT TE
+│
+├─ QUICK_START.md          30-min setup
+├─ SETUP.md                Detalizētas instrukcijas
+├─ CODE_OVERVIEW.md        Koda apskats
+├─ PROJECT_STRUCTURE.md    Failā hierarhija
+├─ README.md               Galvenā dok
+└─ DEPLOY_CHECKLIST.md     Pre-deploy lista
+
+────────────────────────────────────────────────────────────────
+
+⚡ ĀTRI KOMANDI:
+
+npm install              Instalēt paketes
+npm run dev              Localhost izstrāde (http://localhost:3000)
+npm run build            Production build
+git push origin main     Push uz GitHub → Vercel deploy
+
+────────────────────────────────────────────────────────────────
+
+🔐 SVARĪGI:
+
+✓ .env.local NAV Git'ā (.gitignore sargā)
+✓ .env.local.example IR Git'ā (template)
+✓ GOOGLE_PRIVATE_KEY satur \n, ielīmē vienu reizi
+✓ CRON_SECRET jābūt nejaušam (piemēram, 32 rakstzīmes)
+
+────────────────────────────────────────────────────────────────
+
+💡 ĀTRĀS ATBILDES:
+
+Q: Ar ko sākt?              A: INDEX.md → QUICK_START.md
+Q: Kļūda lokālā?            A: CODE_OVERVIEW.md vai SETUP.md
+Q: Kā deploy'ot?            A: SETUP.md, soļi 3
+Q: Deploy issues?           A: DEPLOY_CHECKLIST.md
+Q: Kāda mapa struktūra?     A: PROJECT_STRUCTURE.md
+
+────────────────────────────────────────────────────────────────
+
+✅ GATAVĪBAS PĀRBAUDE (pirms deploJS):
+
+- npm run dev darbojas
+- http://localhost:3000 pieejams
+- Prognožu iesniegšana strādā
+- Leaderboard rāda punktus
+- .env.local ir aizpildīts
+- .env.local nav Git'ā
+- vercel.json ir projekta saknē
+- GitHub push veikts
+- Vercel projekts importēts
+
+────────────────────────────────────────────────────────────────
+
+🚀 SETUP VIENKĀRŠOJUMS:
+
+1. Google Cloud (5 min)
+   - Izveidot projektu, iespējot Sheets API
+   - Service Account + JSON atslēga
+
+2. Google Sheets (5 min)
+   - Izveidot 3 lapas: Speles, Prognozes, Kopvertejums
+   - Share ar Service Account
+
+3. Next.js (10 min)
+   - npx create-next-app (TypeScript + Tailwind)
+   - npm install googleapis
+   - Kopēt kodu failiem
+
+4. .env.local (5 min)
+   - Aizpildīt no Google JSON
+   - GOOGLE_SHEET_ID + CRON_SECRET
+
+5. Localhost (5 min)
+   - npm run dev
+   - http://localhost:3000
+
+────────────────────────────────────────────────────────────────
+
+📞 PALĪDZ:
+
+Jautājumi? Skatīt:
+  → INDEX.md (jautājumu atbildes sadaļa)
+  → CODE_OVERVIEW.md (detalizēta apraksts)
+  → SETUP.md (problēmu risinājumi)
+
+────────────────────────────────────────────────────────────────
+
+🏁 NĀKAMIE SOĻI:
+
+1. Atvērt INDEX.md
+2. Izlasīt QUICK_START.md
+3. Palaist npm run dev
+4. Testēt https://localhost:3000
+5. Deplojs uz Vercel
+6. Dalies ar ģimeni! 🏆
+
+────────────────────────────────────────────────────────────────
+
+Skaļums + Laimes! 🏒🎉
+
+═════════════════════════════════════════════════════════════════

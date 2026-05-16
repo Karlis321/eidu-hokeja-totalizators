@@ -1,0 +1,7 @@
+match_id,date_time,home_team,away_team,home_score,away_score,status
+match_1,2026-05-20T18:00:00Z,Latvija,Vācija,2,3,finished
+match_2,2026-05-21T19:00:00Z,Kanāda,Zviedrija,3,2,finished
+match_3,2026-05-22T18:00:00Z,Čehija,Norvēģija,,,"upcoming"
+match_4,2026-05-23T20:00:00Z,Krievija,Somija,,,"upcoming"
+match_5,2026-05-24T19:00:00Z,Šveice,Lietuva,,,"upcoming"
+match_6,2026-05-25T18:00:00Z,Amerikas Savienotās Valstis,Skotija,,,"upcoming"

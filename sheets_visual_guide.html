@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EIDU Totalizators - Google Sheets Struktūra</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .sheet-section {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .sheet-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead {
+            background: #f5f5f5;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #667eea;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        tr:hover {
+            background: #f9f9f9;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .status-upcoming {
+            background: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .status-finished {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            color: #333;
+        }
+        .info-box strong {
+            color: #667eea;
+        }
+        .steps {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .steps ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+        .steps li {
+            margin-bottom: 10px;
+        }
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏒 EIDU ģimenes hokeja totalizators</h1>
+        <h2 style="text-align: center; color: white; margin-bottom: 30px;">Google Sheets Struktūra</h2>
+
+        <!-- LAPA 1: SPELES -->
+        <div class="sheet-section">
+            <div class="sheet-title">📋 Lapa 1: SPELES (Spēles)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>match_id</th>
+                        <th>date_time</th>
+                        <th>home_team</th>
+                        <th>away_team</th>
+                        <th>home_score</th>
+                        <th>away_score</th>
+                        <th>status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>match_1</strong></td>
+                        <td>2026-05-20T18:00:00Z</td>
+                        <td>Latvija</td>
+                        <td>Vācija</td>
+                        <td>2</td>
+                        <td>3</td>
+                        <td><span class="status-finished">finished</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>match_2</strong></td>
+                        <td>2026-05-21T19:00:00Z</td>
+                        <td>Kanāda</td>
+                        <td>Zviedrija</td>
+                        <td>3</td>
+                        <td>2</td>
+                        <td><span class="status-finished">finished</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>match_3</strong></td>
+                        <td>2026-05-22T18:00:00Z</td>
+                        <td>Čehija</td>
+                        <td>Norvēģija</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="status-upcoming">upcoming</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>match_4</strong></td>
+                        <td>2026-05-23T20:00:00Z</td>
+                        <td>Krievija</td>
+                        <td>Somija</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="status-upcoming">upcoming</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ Piezīme:</strong> home_score un away_score ir tukši (upcoming spēlēm), bet aizpildīti (finished).
+        </div>
+
+        <!-- LAPA 2: PROGNOZES -->
+        <div class="sheet-section">
+            <div class="sheet-title">📊 Lapa 2: PROGNOZES (Lietotāju prognozes)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>prediction_id</th>
+                        <th>player_name</th>
+                        <th>match_id</th>
+                        <th>predicted_home</th>
+                        <th>predicted_away</th>
+                        <th>timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td><strong>Kārlis</strong></td>
+                        <td>match_1</td>
+                        <td>2</td>
+                        <td>2</td>
+                        <td>2026-05-20T15:30:00Z</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td><strong>Aivis</strong></td>
+                        <td>match_1</td>
+                        <td>3</td>
+                        <td>1</td>
+                        <td>2026-05-20T15:45:00Z</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td><strong>Inga</strong></td>
+                        <td>match_2</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>2026-05-21T16:00:00Z</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td><strong>Dace</strong></td>
+                        <td>match_1</td>
+                        <td>2</td>
+                        <td>3</td>
+                        <td>2026-05-20T16:00:00Z</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><strong>Kārlis</strong></td>
+                        <td>match_2</td>
+                        <td>3</td>
+                        <td>2</td>
+                        <td>2026-05-21T17:00:00Z</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ Piezīme:</strong> Katrā rindā ir viena prognoze. player_name ir viens no 8 spēlētājiem.
+        </div>
+
+        <!-- LAPA 3: KOPVERTEJUMS -->
+        <div class="sheet-section">
+            <div class="sheet-title">🏆 Lapa 3: KOPVERTEJUMS (Leaderboard)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>player_name</th>
+                        <th>points_3</th>
+                        <th>points_2</th>
+                        <th>points_1</th>
+                        <th>total_points</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background: #fff3cd;">
+                        <td><strong>🥇 Kārlis</strong></td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>1</td>
+                        <td><strong style="font-size: 1.2em;">8</strong></td>
+                    </tr>
+                    <tr style="background: #e8f5e9;">
+                        <td><strong>🥈 Dace</strong></td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>0</td>
+                        <td><strong>5</strong></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Aivis</strong></td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>5</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Inga</strong></td>
+                        <td>1</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>4</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jānis D.</strong></td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Elīna</strong></td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>0</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jānis S.</strong></td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>0</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Andris</strong></td>
+                        <td>0</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>1</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="info-box">
+            <strong>ℹ️ Piezīme:</strong> total_points = points_3 × 3 + points_2 × 2 + points_1 × 1
+        </div>
+
+        <!-- SETUP SOĻI -->
+        <div class="sheet-section">
+            <div class="sheet-title">⚙️ Setup Soļi</div>
+            <div class="steps">
+                <ol>
+                    <li><strong>Atvērt Google Sheets:</strong> https://sheets.google.com</li>
+                    <li><strong>Izveidot jaunu Spreadsheet:</strong> noklikšķini "+ Jauna" → "Google Tabulas"</li>
+                    <li><strong>Nosauc:</strong> "EIDU Totalizators"</li>
+                    <li><strong>Pārdēvē Sheet1:</strong> → "Speles"</li>
+                    <li><strong>Pievienot lapas:</strong> "Prognozes" un "Kopvertejums"</li>
+                    <li><strong>Ievadīt datus:</strong> virsraksti + rindas (skatīt tabulācijas augstāk)</li>
+                    <li><strong>Kopēt Spreadsheet ID:</strong> no URL /d/{ID}/</li>
+                    <li><strong>Share:</strong> service account e-pasts → Editor tiesības</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- SPĒLĒTĀJI -->
+        <div class="sheet-section">
+            <div class="sheet-title">👥 8 Spēlētāji</div>
+            <div style="padding: 20px;">
+                <p style="font-size: 1.1em; line-height: 2;">
+                    <strong>Kārlis</strong> • Aivis • Inga • Dace • <br>
+                    Jānis D. • Jānis S. • Andris • Elīna
+                </p>
+            </div>
+        </div>
+
+        <footer>
+            <p>📊 EIDU ģimenes hokeja totalizators — Google Sheets struktūra</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Rūpīgi nokopē datus no tabulām iepriekš ↑</p>
+        </footer>
+    </div>
+</body>
+</html>

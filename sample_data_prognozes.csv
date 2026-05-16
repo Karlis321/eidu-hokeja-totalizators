@@ -1,0 +1,11 @@
+prediction_id,player_name,match_id,predicted_home,predicted_away,timestamp
+1,Kārlis,match_1,2,2,2026-05-20T15:30:00Z
+2,Aivis,match_1,3,1,2026-05-20T15:45:00Z
+3,Inga,match_2,1,2,2026-05-21T16:00:00Z
+4,Dace,match_1,2,3,2026-05-20T16:00:00Z
+5,Kārlis,match_2,3,2,2026-05-21T17:00:00Z
+6,Aivis,match_2,2,3,2026-05-21T17:15:00Z
+7,Jānis D.,match_1,2,2,2026-05-20T16:30:00Z
+8,Jānis S.,match_1,1,3,2026-05-20T16:45:00Z
+9,Andris,match_2,3,1,2026-05-21T17:30:00Z
+10,Elīna,match_2,2,2,2026-05-21T17:45:00Z
