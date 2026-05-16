@@ -286,8 +286,9 @@ export default function Home() {
               </thead>
               <tbody>
                 {leaderboard.map((entry, idx) => (
-                  <div key={entry.player_name}>
+                  <>
                     <tr
+                      key={entry.player_name}
                       className="border-b hover:bg-blue-50 cursor-pointer"
                       onClick={() => {
                         setExpandedPlayer(expandedPlayer === entry.player_name ? null : entry.player_name);
@@ -326,7 +327,7 @@ export default function Home() {
                         </td>
                       </tr>
                     )}
-                  </div>
+                  </>
                 ))}
               </tbody>
             </table>
