@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
         clientId: process.env.GOOGLE_CLIENT_ID,
         authUri: 'https://accounts.google.com/o/oauth2/auth',
         tokenUri: 'https://oauth2.googleapis.com/token',
-      },
+      } as any,
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       valueInputOption: 'RAW',
       requestBody: {
         values: [[prediction_id, player_name, match_id, predicted_home, predicted_away, timestamp]],
-      },
+      } as any,
     });
 
     return NextResponse.json({ success: true });

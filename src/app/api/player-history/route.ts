@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
         clientId: process.env.GOOGLE_CLIENT_ID,
         authUri: 'https://accounts.google.com/o/oauth2/auth',
         tokenUri: 'https://oauth2.googleapis.com/token',
-      },
+      } as any,
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 
