@@ -57,6 +57,17 @@ const COUNTRY_FLAGS: { [key: string]: string } = {
   USA: '🇺🇸', // USA
 };
 
+// Generate all dates from May 15 to May 31, 2026
+const generateChampionshipDates = () => {
+  const dates = [];
+  for (let day = 15; day <= 31; day++) {
+    dates.push(new Date(2026, 4, day)); // May = month 4 (0-indexed)
+  }
+  return dates;
+};
+
+const CHAMPIONSHIP_DATES = generateChampionshipDates();
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'predictions' | 'leaderboard'>('predictions');
   const [selectedPlayer, setSelectedPlayer] = useState(PLAYERS[0]);
@@ -67,6 +78,7 @@ export default function Home() {
   const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null);
   const [playerHistory, setPlayerHistory] = useState<PlayerHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<string>(''); // YYYY-MM-DD format
 
   useEffect(() => {
     fetchMatches();
@@ -99,6 +111,9 @@ export default function Home() {
           return acc;
         }, {})
       );
+      // Set default selected date to today
+      const today = new Date();
+      setSelectedDate(formatDateISO(today));
     } catch (error) {
       setMessage('❌ Kļūda ielādējot spēles');
       setMatches([]);
@@ -230,13 +245,31 @@ export default function Home() {
     return hoursBefore >= 1;
   };
 
+  const formatDateISO = (date: Date) => {
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD
+  };
+
+  const getMatchDate = (dateTime: string) => {
+    const date = new Date(dateTime);
+    return formatDateISO(date);
+  };
+
   const getMatchTime = (dateTime: string) => {
     return new Date(dateTime).toLocaleTimeString('lv-LV', { hour: '2-digit', minute: '2-digit' });
   };
 
-  const getMatchDate = (dateTime: string) => {
-    return new Date(dateTime).toLocaleDateString('lv-LV', { month: '2-digit', day: '2-digit' });
+  const formatDateDisplay = (date: Date) => {
+    return date.toLocaleDateString('lv-LV', { month: 'short', day: 'numeric' });
   };
+
+  const formatFullDate = (date: Date) => {
+    return date.toLocaleDateString('lv-LV', { weekday: 'short', month: '2-digit', day: '2-digit' });
+  };
+
+  // Filter matches by selected date
+  const filteredMatches = selectedDate
+    ? matches.filter((match) => getMatchDate(match.date_time) === selectedDate)
+    : [];
 
   if (loading) {
     return <div className="p-8 text-center">Ielādē...</div>;
@@ -244,7 +277,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="max-w-4xl mx-auto p-4">
+      <div className="max-w-5xl mx-auto p-4">
         {/* Header */}
         <div className="text-center mb-8 mt-4">
           <h1 className="text-4xl font-bold text-blue-900 mb-2">🏒 EIDU Hokeja Totalizators</h1>
@@ -291,7 +324,7 @@ export default function Home() {
               <select
                 value={selectedPlayer}
                 onChange={(e) => setSelectedPlayer(e.target.value)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 relative z-10"
+                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
               >
                 {PLAYERS.map((p) => (
                   <option key={p} value={p}>
@@ -301,80 +334,131 @@ export default function Home() {
               </select>
             </div>
 
-            {/* Matches */}
+            {/* Date Filter */}
+            <div className="mb-6">
+              <label className="block text-gray-700 font-semibold mb-3">Spēļu datums:</label>
+              <div className="overflow-x-auto pb-2">
+                <div className="flex gap-2 min-w-max">
+                  {CHAMPIONSHIP_DATES.map((date) => {
+                    const dateISO = formatDateISO(date);
+                    const isSelected = selectedDate === dateISO;
+                    const hasGames = matches.some((m) => getMatchDate(m.date_time) === dateISO);
+
+                    return (
+                      <button
+                        key={dateISO}
+                        onClick={() => setSelectedDate(dateISO)}
+                        disabled={!hasGames}
+                        className={`px-4 py-2 rounded-lg font-semibold transition whitespace-nowrap ${
+                          isSelected
+                            ? 'bg-blue-600 text-white'
+                            : hasGames
+                            ? 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {formatDateDisplay(date)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Matches for Selected Date */}
             <div className="space-y-4">
-              {Array.isArray(matches) && matches.length > 0 ? (
-                matches.map((match) => (
-                  <div key={match.match_id} className="border-2 border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-3xl">{COUNTRY_FLAGS[match.home_team] || '🏒'}</span>
-                        <div className="flex flex-col">
-                          <span className="font-bold text-lg">{match.home_team}</span>
-                        </div>
-                        <span className="text-gray-500 mx-2">—</span>
-                        <div className="flex flex-col">
-                          <span className="font-bold text-lg">{match.away_team}</span>
-                        </div>
-                        <span className="text-3xl">{COUNTRY_FLAGS[match.away_team] || '🏒'}</span>
-                      </div>
-                      <div className="text-right text-sm text-gray-600">
-                        <div className="font-semibold">{getMatchDate(match.date_time)}</div>
-                        <div>{getMatchTime(match.date_time)}</div>
-                      </div>
-                    </div>
-
-                    {!canSubmit(match) && (
-                      <div className="text-xs text-red-600 mb-2">⏰ Laiks prognozēšanai ir beidzies</div>
-                    )}
-
-                    <div className="flex gap-3">
-                      <input
-                        type="number"
-                        min="0"
-                        disabled={!canSubmit(match) || match.status !== 'upcoming'}
-                        value={predictions[match.match_id]?.home || ''}
-                        onChange={(e) =>
-                          setPredictions({
-                            ...predictions,
-                            [match.match_id]: { ...predictions[match.match_id], home: e.target.value },
-                          })
-                        }
-                        placeholder="Mājas"
-                        className="w-16 p-2 border-2 border-gray-300 rounded text-center disabled:bg-gray-100"
-                      />
-                      <span className="flex items-center text-gray-700 font-bold">:</span>
-                      <input
-                        type="number"
-                        min="0"
-                        disabled={!canSubmit(match) || match.status !== 'upcoming'}
-                        value={predictions[match.match_id]?.away || ''}
-                        onChange={(e) =>
-                          setPredictions({
-                            ...predictions,
-                            [match.match_id]: { ...predictions[match.match_id], away: e.target.value },
-                          })
-                        }
-                        placeholder="Viesi"
-                        className="w-16 p-2 border-2 border-gray-300 rounded text-center disabled:bg-gray-100"
-                      />
-                    </div>
+              {selectedDate && filteredMatches.length > 0 ? (
+                <>
+                  <div className="text-lg font-semibold text-gray-700 mb-4">
+                    Spēles {formatFullDate(new Date(selectedDate))}
                   </div>
-                ))
+                  {filteredMatches.map((match) => (
+                    <div key={match.match_id} className="border-2 border-gray-200 rounded-lg p-4">
+                      {/* Match Header with Flags and Teams */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          {/* Home Team */}
+                          <div className="flex flex-col items-center">
+                            <span className="text-4xl mb-1">{COUNTRY_FLAGS[match.home_team] || '🏒'}</span>
+                            <span className="font-bold text-base">{match.home_team}</span>
+                          </div>
+
+                          {/* VS */}
+                          <div className="text-gray-400 font-bold mx-2">VS</div>
+
+                          {/* Away Team */}
+                          <div className="flex flex-col items-center">
+                            <span className="text-4xl mb-1">{COUNTRY_FLAGS[match.away_team] || '🏒'}</span>
+                            <span className="font-bold text-base">{match.away_team}</span>
+                          </div>
+                        </div>
+
+                        {/* Time */}
+                        <div className="text-right text-sm text-gray-600">
+                          <div className="font-semibold text-base">{getMatchTime(match.date_time)}</div>
+                        </div>
+                      </div>
+
+                      {/* Submission Status */}
+                      {!canSubmit(match) && (
+                        <div className="text-xs text-red-600 mb-3">⏰ Laiks prognozēšanai ir beidzies</div>
+                      )}
+
+                      {/* Score Input */}
+                      <div className="flex items-center gap-3 justify-center">
+                        <input
+                          type="number"
+                          min="0"
+                          disabled={!canSubmit(match) || match.status !== 'upcoming'}
+                          value={predictions[match.match_id]?.home || ''}
+                          onChange={(e) =>
+                            setPredictions({
+                              ...predictions,
+                              [match.match_id]: { ...predictions[match.match_id], home: e.target.value },
+                            })
+                          }
+                          placeholder="0"
+                          className="w-20 p-3 border-2 border-gray-300 rounded text-center text-lg font-bold disabled:bg-gray-100"
+                        />
+                        <span className="text-gray-700 font-bold text-2xl">:</span>
+                        <input
+                          type="number"
+                          min="0"
+                          disabled={!canSubmit(match) || match.status !== 'upcoming'}
+                          value={predictions[match.match_id]?.away || ''}
+                          onChange={(e) =>
+                            setPredictions({
+                              ...predictions,
+                              [match.match_id]: { ...predictions[match.match_id], away: e.target.value },
+                            })
+                          }
+                          placeholder="0"
+                          className="w-20 p-3 border-2 border-gray-300 rounded text-center text-lg font-bold disabled:bg-gray-100"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : selectedDate ? (
+                <div className="text-center text-gray-500 py-8">
+                  {formatFullDate(new Date(selectedDate))} nav spēļu
+                </div>
               ) : (
                 <div className="text-center text-gray-500 py-8">
-                  ⚠️ Nevar ielādēt spēles. Pārliecinieties, ka Google Sheets ir pareizi konfigurēts.
+                  Izvēlieties datumu, lai redzētu spēles
                 </div>
               )}
             </div>
 
             {/* Submit Button */}
-            <button
-              onClick={handleSubmitPredictions}
-              className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition"
-            >
-              ✅ Iesniegt prognozes
-            </button>
+            {filteredMatches.length > 0 && (
+              <button
+                onClick={handleSubmitPredictions}
+                className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition"
+              >
+                ✅ Iesniegt prognozes
+              </button>
+            )}
           </div>
         )}
 
