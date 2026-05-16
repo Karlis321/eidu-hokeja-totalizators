@@ -94,12 +94,17 @@ export default function Home() {
     fetchMatches();
     fetchLeaderboard();
     fetchDetailedLeaderboard();
+    // Set initial date to today
+    const today = new Date();
+    setSelectedDate(formatDateISO(today));
   }, []);
 
   useEffect(() => {
     // Load existing predictions when player changes
-    loadPlayerPredictions(selectedPlayer);
-  }, [selectedPlayer]);
+    if (matches.length > 0) {
+      loadPlayerPredictions(selectedPlayer);
+    }
+  }, [selectedPlayer, matches]);
 
   const fetchMatches = async () => {
     try {
@@ -269,28 +274,6 @@ export default function Home() {
     }
   };
 
-  const handleDownloadExcel = async () => {
-    try {
-      const res = await fetch('/api/export-excel');
-      if (!res.ok) {
-        alert('❌ Nevar lejupielādēt failu');
-        return;
-      }
-
-      // Create blob and trigger download
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `EIDU_Hokeja_Totalizators_${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      alert('❌ Kļūda lejupielādējot failu');
-    }
-  };
 
   const canSubmit = (match: Match) => {
     const now = new Date();
@@ -335,13 +318,7 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-8 mt-4">
           <h1 className="text-4xl font-bold text-blue-900 mb-2">🏒 EIDU Hokeja Totalizators</h1>
-          <p className="text-gray-600 mb-4">Ģimenes hokeja prognožu spēle</p>
-          <button
-            onClick={handleDownloadExcel}
-            className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition"
-          >
-            📥 Lejupielādēt Excel
-          </button>
+          <p className="text-gray-600">Ģimenes hokeja prognožu spēle</p>
         </div>
 
         {/* Tabs */}
