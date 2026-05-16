@@ -34,27 +34,27 @@ interface PlayerHistory {
 const PLAYERS = ['Kārlis', 'Inga', 'Aivis', 'Dace', 'Jānis D.', 'Jānis S.', 'Andris', 'Elīna'];
 
 const COUNTRY_FLAGS: { [key: string]: string } = {
-  AUT: '🇦🇹',
-  BLR: '🇧🇾',
-  CAN: '🇨🇦',
-  CZE: '🇨🇿',
-  DEN: '🇩🇰',
-  FIN: '🇫🇮',
-  FRA: '🇫🇷',
-  GER: '🇩🇪',
-  GBR: '🇬🇧',
-  HUN: '🇭🇺',
-  ITA: '🇮🇹',
-  JPN: '🇯🇵',
-  KAZ: '🇰🇿',
-  LAT: '🇱🇻',
-  NOR: '🇳🇴',
-  ROU: '🇷🇴',
-  SVK: '🇸🇰',
-  SLO: '🇸🇮',
-  SWE: '🇸🇪',
-  SUI: '🇨🇭',
-  USA: '🇺🇸',
+  AUT: '🇦🇹', // Austria
+  BLR: '🇧🇾', // Belarus
+  CAN: '🇨🇦', // Canada
+  CZE: '🇨🇿', // Czechia
+  DEN: '🇩🇰', // Denmark
+  FIN: '🇫🇮', // Finland
+  FRA: '🇫🇷', // France
+  GER: '🇩🇪', // Germany
+  GBR: '🇬🇧', // Great Britain
+  HUN: '🇭🇺', // Hungary
+  ITA: '🇮🇹', // Italy
+  JPN: '🇯🇵', // Japan
+  KAZ: '🇰🇿', // Kazakhstan
+  LAT: '🇱🇻', // Latvia
+  NOR: '🇳🇴', // Norway
+  ROU: '🇷🇴', // Romania
+  SVK: '🇸🇰', // Slovakia
+  SLO: '🇸🇮', // Slovenia
+  SWE: '🇸🇪', // Sweden
+  SUI: '🇨🇭', // Switzerland
+  USA: '🇺🇸', // USA
 };
 
 export default function Home() {
@@ -72,6 +72,11 @@ export default function Home() {
     fetchMatches();
     fetchLeaderboard();
   }, []);
+
+  useEffect(() => {
+    // Load existing predictions when player changes
+    loadPlayerPredictions(selectedPlayer);
+  }, [selectedPlayer]);
 
   const fetchMatches = async () => {
     try {
@@ -138,6 +143,43 @@ export default function Home() {
     } catch (error) {
       console.error('Error fetching history:', error);
       setPlayerHistory([]);
+    }
+  };
+
+  const loadPlayerPredictions = async (playerName: string) => {
+    try {
+      const res = await fetch(`/api/player-history?player=${encodeURIComponent(playerName)}`);
+      if (!res.ok) {
+        // Reset predictions if player has none
+        setPredictions(
+          matches.reduce((acc: any, m: Match) => {
+            acc[m.match_id] = { home: '', away: '' };
+            return acc;
+          }, {})
+        );
+        return;
+      }
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        return;
+      }
+
+      // Load existing predictions for this player
+      const playerPreds: { [key: string]: { home: string; away: string } } = {};
+      matches.forEach((m: Match) => {
+        playerPreds[m.match_id] = { home: '', away: '' };
+      });
+
+      data.forEach((hist: PlayerHistory) => {
+        playerPreds[hist.match_id] = {
+          home: String(hist.predicted_home),
+          away: String(hist.predicted_away),
+        };
+      });
+
+      setPredictions(playerPreds);
+    } catch (error) {
+      console.error('Error loading player predictions:', error);
     }
   };
 
