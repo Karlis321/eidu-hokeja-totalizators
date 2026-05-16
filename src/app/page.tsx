@@ -264,6 +264,29 @@ export default function Home() {
     }
   };
 
+  const handleDownloadExcel = async () => {
+    try {
+      const res = await fetch('/api/export-excel');
+      if (!res.ok) {
+        alert('❌ Nevar lejupielādēt failu');
+        return;
+      }
+
+      // Create blob and trigger download
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `EIDU_Hokeja_Totalizators_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      alert('❌ Kļūda lejupielādējot failu');
+    }
+  };
+
   const canSubmit = (match: Match) => {
     const now = new Date();
     const matchTime = new Date(match.date_time);
@@ -307,7 +330,13 @@ export default function Home() {
         {/* Header */}
         <div className="text-center mb-8 mt-4">
           <h1 className="text-4xl font-bold text-blue-900 mb-2">🏒 EIDU Hokeja Totalizators</h1>
-          <p className="text-gray-600">Ģimenes hokeja prognožu spēle</p>
+          <p className="text-gray-600 mb-4">Ģimenes hokeja prognožu spēle</p>
+          <button
+            onClick={handleDownloadExcel}
+            className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+          >
+            📥 Lejupielādēt Excel
+          </button>
         </div>
 
         {/* Tabs */}
@@ -493,33 +522,37 @@ export default function Home() {
             {/* Bar Chart */}
             {Array.isArray(detailedLeaderboard) && detailedLeaderboard.length > 0 ? (
               <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Punktu sadalījums</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">📊 Kopējie punkti</h2>
                 <div className="space-y-4">
                   {detailedLeaderboard.map((entry, idx) => {
                     const maxPoints = Math.max(...detailedLeaderboard.map(e => e.total_points));
-                    const percentage = (entry.total_points / maxPoints) * 100;
+                    const percentage = maxPoints > 0 ? (entry.total_points / maxPoints) * 100 : 0;
 
                     return (
                       <div key={entry.player_name}>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="font-semibold text-gray-700">
+                          <span className="font-semibold text-gray-700 min-w-24">
                             {idx + 1}. {entry.player_name}
                           </span>
-                          <span className="font-bold text-lg text-blue-600">
-                            {entry.total_points}p
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
-                          <div
-                            className="bg-gradient-to-r from-blue-400 to-blue-600 h-full flex items-center justify-end pr-3 transition-all"
-                            style={{ width: `${percentage}%` }}
-                          >
-                            {percentage > 20 && (
-                              <span className="text-white font-bold text-sm">
-                                {entry.total_points}
-                              </span>
-                            )}
+                          <div className="flex items-center gap-4">
+                            <div className="text-sm text-gray-600">
+                              <span className="text-green-600 font-semibold">{entry.points_3}</span>
+                              <span className="text-gray-400 mx-1">×3</span>
+                              <span className="text-blue-600 font-semibold">{entry.points_2}</span>
+                              <span className="text-gray-400 mx-1">×2</span>
+                              <span className="text-yellow-600 font-semibold">{entry.points_1}</span>
+                              <span className="text-gray-400 mx-1">×1</span>
+                            </div>
+                            <span className="font-bold text-lg text-blue-600 min-w-12 text-right">
+                              {entry.total_points}p
+                            </span>
                           </div>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-blue-400 to-blue-600 h-full transition-all"
+                            style={{ width: `${percentage}%` }}
+                          />
                         </div>
                       </div>
                     );
@@ -528,69 +561,76 @@ export default function Home() {
               </div>
             ) : null}
 
-            {/* Detailed Table */}
+            {/* Summary Table with Expandable Details */}
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">📋 Detalizēts skaitījums</h2>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">🏆 Izvērstais rezultāts</h2>
 
                 {Array.isArray(detailedLeaderboard) && detailedLeaderboard.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-blue-600 text-white">
-                          <th className="px-4 py-3 text-left">Spēlētājs</th>
-                          <th className="px-4 py-3 text-center">M1</th>
-                          <th className="px-4 py-3 text-center">M2</th>
-                          <th className="px-4 py-3 text-center">M3</th>
-                          <th className="px-4 py-3 text-center">M4</th>
-                          <th className="px-4 py-3 text-center">M5</th>
-                          <th className="px-4 py-3 text-center">M6</th>
-                          <th className="px-4 py-3 text-center font-bold">Kopā</th>
-                          <th className="px-4 py-3 text-center">3p</th>
-                          <th className="px-4 py-3 text-center">2p</th>
-                          <th className="px-4 py-3 text-center">1p</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {detailedLeaderboard.map((entry, idx) => (
-                          <tr key={entry.player_name} className="border-b hover:bg-blue-50">
-                            <td className="px-4 py-3 font-semibold">
-                              {idx + 1}. {entry.player_name}
-                            </td>
-                            {/* First 6 matches */}
-                            {entry.match_points.slice(0, 6).map((points, i) => (
-                              <td key={i} className="px-4 py-3 text-center">
-                                <span
-                                  className={`inline-block w-8 h-8 rounded flex items-center justify-center font-bold text-white ${
+                  <div className="space-y-2">
+                    {/* Header Row */}
+                    <div className="grid grid-cols-12 gap-2 bg-blue-600 text-white p-4 rounded-lg font-bold text-sm">
+                      <div className="col-span-4">Spēlētājs</div>
+                      <div className="col-span-3 text-center">Statistika</div>
+                      <div className="col-span-2 text-center">Kopā</div>
+                      <div className="col-span-3 text-center">Detaļas</div>
+                    </div>
+
+                    {/* Player Rows */}
+                    {detailedLeaderboard.map((entry, idx) => (
+                      <div key={entry.player_name}>
+                        {/* Summary Row */}
+                        <div
+                          onClick={() => {
+                            setExpandedPlayer(expandedPlayer === entry.player_name ? null : entry.player_name);
+                          }}
+                          className="grid grid-cols-12 gap-2 p-4 border-b hover:bg-blue-50 cursor-pointer rounded transition items-center"
+                        >
+                          <div className="col-span-4 font-semibold text-gray-800">
+                            {idx + 1}. {entry.player_name}
+                          </div>
+                          <div className="col-span-3 text-center text-sm text-gray-600">
+                            <span className="text-green-600 font-semibold">{entry.points_3}</span>
+                            <span className="mx-1">·</span>
+                            <span className="text-blue-600 font-semibold">{entry.points_2}</span>
+                            <span className="mx-1">·</span>
+                            <span className="text-yellow-600 font-semibold">{entry.points_1}</span>
+                          </div>
+                          <div className="col-span-2 text-center font-bold text-lg text-blue-600">
+                            {entry.total_points}
+                          </div>
+                          <div className="col-span-3 text-center text-blue-600">
+                            {expandedPlayer === entry.player_name ? '▼ Aizvērt' : '▶ Atvērt'}
+                          </div>
+                        </div>
+
+                        {/* Expandable Details */}
+                        {expandedPlayer === entry.player_name && (
+                          <div className="bg-gray-50 p-4 m-2 rounded border-l-4 border-blue-400">
+                            <h3 className="font-semibold text-gray-700 mb-3">Rezultāts pa spēlēm:</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto">
+                              {entry.match_points.map((points, matchIdx) => (
+                                <div
+                                  key={matchIdx}
+                                  className={`p-3 rounded text-center font-bold text-white transition ${
                                     points === 3
                                       ? 'bg-green-500'
                                       : points === 2
                                       ? 'bg-blue-500'
                                       : points === 1
                                       ? 'bg-yellow-500'
-                                      : 'bg-gray-300'
+                                      : 'bg-gray-400'
                                   }`}
                                 >
-                                  {points}
-                                </span>
-                              </td>
-                            ))}
-                            <td className="px-4 py-3 text-center font-bold text-blue-600 text-lg">
-                              {entry.total_points}
-                            </td>
-                            <td className="px-4 py-3 text-center text-green-600 font-semibold">
-                              {entry.points_3}
-                            </td>
-                            <td className="px-4 py-3 text-center text-blue-600 font-semibold">
-                              {entry.points_2}
-                            </td>
-                            <td className="px-4 py-3 text-center text-yellow-600 font-semibold">
-                              {entry.points_1}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                                  <div className="text-xs opacity-80">Spēle {matchIdx + 1}</div>
+                                  <div className="text-2xl">{points}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center text-gray-500 py-8">

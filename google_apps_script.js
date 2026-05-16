@@ -134,6 +134,39 @@ function updateLeaderboard() {
 }
 
 /**
+ * Export Kopvertejums to Excel format
+ */
+function exportToExcel() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const kopvertejumsSheet = ss.getSheetByName('Kopvertejums');
+
+  // Get all data
+  const data = kopvertejumsSheet.getDataRange().getValues();
+
+  // Create new spreadsheet
+  const excelFile = SpreadsheetApp.create('EIDU Hokeja Totalizators - Rezultāti');
+  const excelSheet = excelFile.getActiveSheet();
+  excelSheet.setName('Rezultāti');
+
+  // Paste data
+  excelSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+
+  // Format header row
+  const headerRange = excelSheet.getRange(1, 1, 1, data[0].length);
+  headerRange.setBackground('#1e40af');
+  headerRange.setFontColor('#ffffff');
+  headerRange.setFontWeight('bold');
+
+  // Auto-resize columns
+  for (let i = 1; i <= data[0].length; i++) {
+    excelSheet.autoResizeColumn(i);
+  }
+
+  Logger.log('✅ Excel exported: ' + excelFile.getUrl());
+  return excelFile.getUrl();
+}
+
+/**
  * Trigger: Run when Speles sheet changes
  */
 function onEditSpeles(e) {
@@ -147,6 +180,8 @@ function onEditSpeles(e) {
   if (range.getColumn() === 5 || range.getColumn() === 6) {
     Logger.log('Score updated, recalculating leaderboard...');
     updateLeaderboard();
+    // Optionally export to Excel (comment out if too slow)
+    // exportToExcel();
   }
 }
 
