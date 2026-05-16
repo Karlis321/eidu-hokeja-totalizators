@@ -20,8 +20,13 @@ interface LeaderboardEntry {
   total_points: number;
 }
 
+interface MatchResult {
+  name: string; // "GBR-AUT", "HUN-FIN", etc.
+  points: number; // 0, 1, 2, or 3
+}
+
 interface DetailedLeaderboardEntry extends LeaderboardEntry {
-  match_points: number[]; // Points for each match [0,3,2,1,...]
+  match_points: MatchResult[]; // [{name: "GBR-AUT", points: 3}, ...]
 }
 
 interface PlayerHistory {
@@ -609,21 +614,21 @@ export default function Home() {
                           <div className="bg-gray-50 p-4 m-2 rounded border-l-4 border-blue-400">
                             <h3 className="font-semibold text-gray-700 mb-3">Rezultāts pa spēlēm:</h3>
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto">
-                              {entry.match_points.map((points, matchIdx) => (
+                              {entry.match_points.map((match, matchIdx) => (
                                 <div
                                   key={matchIdx}
                                   className={`p-3 rounded text-center font-bold text-white transition ${
-                                    points === 3
+                                    match.points === 3
                                       ? 'bg-green-500'
-                                      : points === 2
+                                      : match.points === 2
                                       ? 'bg-blue-500'
-                                      : points === 1
+                                      : match.points === 1
                                       ? 'bg-yellow-500'
                                       : 'bg-gray-400'
                                   }`}
                                 >
-                                  <div className="text-xs opacity-80">Spēle {matchIdx + 1}</div>
-                                  <div className="text-2xl">{points}</div>
+                                  <div className="text-xs opacity-80 truncate">{match.name}</div>
+                                  <div className="text-2xl">{match.points}</div>
                                 </div>
                               ))}
                             </div>

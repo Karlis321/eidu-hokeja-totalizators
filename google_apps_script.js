@@ -51,26 +51,32 @@ function updateLeaderboard() {
   const spelesData = spelesSheet.getRange('A2:G1000').getValues();
   const prognosesData = prognosesSheet.getRange('A2:F1000').getValues();
 
-  // Build match map: match_id -> {home_score, away_score}
+  // Build match map: match_id -> {home_team, away_team, home_score, away_score}
   const matches = {};
+  const matchIds = [];
   spelesData.forEach((row) => {
     if (row[0]) { // if match_id exists
-      matches[row[0]] = {
-        home_team: row[2],
-        away_team: row[3],
+      const matchId = row[0];
+      matches[matchId] = {
+        home_team: row[2] || '?',
+        away_team: row[3] || '?',
         home_score: parseInt(row[4]) || 0,
         away_score: parseInt(row[5]) || 0,
       };
+      matchIds.push(parseInt(matchId));
     }
   });
+
+  // Sort match IDs to maintain order
+  matchIds.sort((a, b) => a - b);
 
   // Calculate points for each player
   const playerPoints = {};
   PLAYERS.forEach((player) => {
     playerPoints[player] = {};
-    for (let matchId = 1; matchId <= 12; matchId++) {
+    matchIds.forEach((matchId) => {
       playerPoints[player][matchId] = 0;
-    }
+    });
   });
 
   // Process predictions
@@ -87,11 +93,13 @@ function updateLeaderboard() {
     }
   });
 
-  // Update Kopvertejums sheet
-  // Row 1: Headers (Player, Match1, Match2, ... Match12, Total, 3p, 2p, 1p)
-  const headers = ['Spēlētājs', 'Match 1', 'Match 2', 'Match 3', 'Match 4', 'Match 5', 'Match 6',
-                   'Match 7', 'Match 8', 'Match 9', 'Match 10', 'Match 11', 'Match 12',
-                   'Kopā', '3p', '2p', '1p'];
+  // Build headers with actual match names (HOME-AWAY)
+  const headers = ['Spēlētājs'];
+  matchIds.forEach((matchId) => {
+    const match = matches[matchId];
+    headers.push(`${match.home_team}-${match.away_team}`);
+  });
+  headers.push('Kopā', '3p', '2p', '1p');
 
   // Clear existing data
   kopvertejumsSheet.clearContents();
@@ -104,10 +112,10 @@ function updateLeaderboard() {
   PLAYERS.forEach((player) => {
     const row = [player];
 
-    // Match points (columns B-M)
-    for (let matchId = 1; matchId <= 12; matchId++) {
+    // Match points in order
+    matchIds.forEach((matchId) => {
       row.push(playerPoints[player][matchId] || 0);
-    }
+    });
 
     // Calculate totals
     const totalPoints = Object.values(playerPoints[player]).reduce((a, b) => a + b, 0);
@@ -129,8 +137,15 @@ function updateLeaderboard() {
   headerRange.setBackground('#1e40af');
   headerRange.setFontColor('#ffffff');
   headerRange.setFontWeight('bold');
+  headerRange.setHorizontalAlignment('center');
+  headerRange.setFontSize(10);
 
-  Logger.log('✅ Leaderboard updated successfully');
+  // Auto-resize columns
+  for (let i = 1; i <= headers.length; i++) {
+    kopvertejumsSheet.autoResizeColumn(i);
+  }
+
+  Logger.log('✅ Leaderboard updated successfully with ' + matchIds.length + ' matches');
 }
 
 /**

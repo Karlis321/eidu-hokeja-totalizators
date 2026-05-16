@@ -46,25 +46,32 @@ export async function GET() {
     const headers = data[0] || [];
 
     // Parse player rows
+    // Get match headers
+    const headers = data[0] || [];
+    const matchNames = headers.slice(1, headers.length - 4); // All columns except Player, Kopā, 3p, 2p, 1p
+
     const leaderboard = data.slice(1)
       .filter((row: any[]) => row[0]) // Filter out empty rows
       .map((row: any[]) => {
         const playerName = row[0];
-        const matchPoints: number[] = [];
+        const matchPoints: { name: string; points: number }[] = [];
 
-        // Extract match points (columns B-M = indices 1-12)
-        for (let i = 1; i <= 12; i++) {
-          matchPoints.push(parseInt(row[i]) || 0);
+        // Extract match points with names
+        for (let i = 0; i < matchNames.length; i++) {
+          matchPoints.push({
+            name: matchNames[i] || `Match ${i + 1}`,
+            points: parseInt(row[i + 1]) || 0,
+          });
         }
 
-        const totalPoints = parseInt(row[13]) || 0;
-        const points3 = parseInt(row[14]) || 0;
-        const points2 = parseInt(row[15]) || 0;
-        const points1 = parseInt(row[16]) || 0;
+        const totalPoints = parseInt(row[matchNames.length + 1]) || 0;
+        const points3 = parseInt(row[matchNames.length + 2]) || 0;
+        const points2 = parseInt(row[matchNames.length + 3]) || 0;
+        const points1 = parseInt(row[matchNames.length + 4]) || 0;
 
         return {
           player_name: playerName,
-          match_points: matchPoints, // [0, 3, 2, 1, 0, 2, ...]
+          match_points: matchPoints, // [{name: "GBR-AUT", points: 3}, ...]
           total_points: totalPoints,
           points_3: points3,
           points_2: points2,
